@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GNL Bankroll Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 32px;
+            color: #00d9ff;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .stat-card .value.pending {
+            color: #ffa502;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .btn-deposit {
+            background: linear-gradient(135deg, #00d9ff, #00ff88);
+            color: #000;
+        }
+
+        .btn-withdraw {
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            color: #fff;
+        }
+
+        .btn-transfer {
+            background: linear-gradient(135deg, #ffa502, #ff7f50);
+            color: #000;
+        }
+
+        .btn-inuse {
+            background: linear-gradient(135deg, #00d9ff, #00ff88);
+            color: #000;
+        }
+
+        .btn:hover {
+            transform: scale(1.02);
+            opacity: 0.9;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section h2 {
+            color: #00d9ff;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .sportsbook-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .sportsbook-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sportsbook-card .name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .sportsbook-card .balance {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ff88;
+            margin-bottom: 10px;
+        }
+
+        .sportsbook-card .details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-content h2 {
+            color: #00d9ff;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #888;
+            font-size: 13px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #00d9ff;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .transaction-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .transaction-item .info {
+            flex: 1;
+        }
+
+        .transaction-item .type {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .transaction-item .description {
+            font-size: 14px;
+            color: #fff;
+            margin-top: 4px;
+        }
+
+        .transaction-item .amount {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .transaction-item .amount.deposit {
+            color: #00ff88;
+        }
+
+        .transaction-item .amount.withdrawal {
+            color: #ff4757;
+        }
+
+        .transaction-item .amount.transfer {
+            color: #ffa502;
+        }
+
+        .transaction-item .date {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .transaction-item .actions {
+            display: flex;
+            gap: 8px;
+            margin-left: 15px;
+        }
+
+        /* Pending Bets List */
+        .pending-bets-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .pending-bet-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255, 165, 2, 0.3);
+        }
+
+        .pending-bet-card .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .pending-bet-card .event {
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .pending-bet-card .status {
+            background: linear-gradient(135deg, #ffa502, #ff7f50);
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .pending-bet-card .details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .pending-bet-card .detail-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .pending-bet-card .detail-item .label {
+            color: #888;
+            font-size: 11px;
+            margin-bottom: 2px;
+        }
+
+        .pending-bet-card .detail-item .value {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .pending-bet-card .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .pending-bet-card .actions button {
+            flex: 1;
+            max-width: 150px;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pending-bet-card .btn-won {
+            background: linear-gradient(135deg, #00ff88, #00d9ff);
+            color: #000;
+        }
+
+        .pending-bet-card .btn-won:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+        }
+
+        .pending-bet-card .btn-lost {
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            color: #fff;
+        }
+
+        .pending-bet-card .btn-lost:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 71, 87, 0.4);
+        }
+
+        .transaction-item .actions button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .transaction-item .actions .btn-edit {
+            background: rgba(0, 217, 255, 0.2);
+            color: #00d9ff;
+            border: 1px solid rgba(0, 217, 255, 0.5);
+        }
+
+        .transaction-item .actions .btn-edit:hover {
+            background: rgba(0, 217, 255, 0.4);
+        }
+
+        .transaction-item .actions .btn-delete {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+            border: 1px solid rgba(255, 71, 87, 0.5);
+        }
+
+        .transaction-item .actions .btn-delete:hover {
+            background: rgba(255, 71, 87, 0.4);
+        }
+
+        @media (max-width: 600px) {
+            .transaction-item {
+                flex-wrap: wrap;
+            }
+
+            .transaction-item .actions {
+                width: 100%;
+                justify-content: flex-end;
+                margin-top: 10px;
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .dashboard {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 GNL Bankroll Tracker</h1>
+        <p class="subtitle">Track deposits, withdrawals, and transfers across all sportsbooks</p>
+        
+        <!-- Navigation Links -->
+        <div style="text-align: center; margin-bottom: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <a href="./calculator.html" style="display: inline-block; padding: 10px 20px; background: rgba(0, 217, 255, 0.2); border: 1px solid rgba(0, 217, 255, 0.5); border-radius: 8px; color: #00d9ff; text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.3s;">
+                🧮 Calculator
+            </a>
+            <a href="./bets.html" style="display: inline-block; padding: 10px 20px; background: rgba(0, 217, 255, 0.2); border: 1px solid rgba(0, 217, 255, 0.5); border-radius: 8px; color: #00d9ff; text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.3s;">
+                📊 Bet History
+            </a>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="dashboard">
+            <div class="stat-card">
+                <h3>Total Bankroll</h3>
+                <div class="value" id="totalBankroll">$0.00</div>
+            </div>
+            <div class="stat-card">
+                <h3>Available</h3>
+                <div class="value" id="totalAvailable">$0.00</div>
+            </div>
+            <div class="stat-card">
+                <h3>This Week</h3>
+                <div class="value" id="weeklyChange">$0.00</div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="actions">
+            <button class="btn btn-deposit" onclick="openModal('deposit')">+ Deposit</button>
+            <button class="btn btn-withdraw" onclick="openModal('withdraw')">- Withdraw</button>
+            <button class="btn btn-inuse" onclick="openModal('inuse')">🏷️ Label In Use</button>
+            <button class="btn btn-transfer" onclick="openModal('transfer')">↔ Transfer</button>
+        </div>
+
+        <!-- Data Management -->
+        <div style="text-align: center; margin-bottom: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button onclick="syncToGitHub()" style="padding: 10px 20px; background: linear-gradient(135deg, #00d9ff, #00ff88); border: none; border-radius: 8px; color: #000; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.3s; box-shadow: 0 0 15px rgba(0, 217, 255, 0.4);">
+                🔄 Save / Sync to GitHub
+            </button>
+            <button onclick="loadFromGitHub()" style="padding: 10px 20px; background: rgba(0, 217, 255, 0.2); border: 1px solid rgba(0, 217, 255, 0.5); border-radius: 8px; color: #00d9ff; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.3s;">
+                📥 Load from GitHub
+            </button>
+            <button onclick="exportData()" style="padding: 10px 20px; background: rgba(0, 217, 255, 0.2); border: 1px solid rgba(0, 217, 255, 0.5); border-radius: 8px; color: #00d9ff; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.3s;">
+                💾 Export Local
+            </button>
+            <button onclick="document.getElementById('importFile').click()" style="padding: 10px 20px; background: rgba(0, 255, 136, 0.2); border: 1px solid rgba(0, 255, 136, 0.5); border-radius: 8px; color: #00ff88; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.3s;">
+                📂 Import File
+            </button>
+            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(this)">
+            <button onclick="resetAll()" style="padding: 10px 20px; background: rgba(255, 71, 87, 0.2); border: 1px solid rgba(255, 71, 87, 0.5); border-radius: 8px; color: #ff4757; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.3s;">
+                🗑️ Reset
+            </button>
+        </div>
+        <div style="text-align: center; margin-bottom: 20px; color: #888; font-size: 12px;">
+            💡 <strong>Sync:</strong> Click "Save/Sync" → Download JSON → Commit to GitHub → Load on other browsers
+        </div>
+
+        <!-- Sportsbooks -->
+        <div class="section">
+            <h2>📊 Sportsbook Balances</h2>
+            <div class="sportsbook-grid" id="sportsbooksGrid"></div>
+        </div>
+
+        <!-- Pending Bets -->
+        <div class="section">
+            <h2>⏳ Pending Bets (In Use)</h2>
+            <div class="pending-bets-list" id="pendingBetsList">
+                <p style="color: #888; text-align: center; padding: 20px;">Loading pending bets...</p>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="section">
+            <h2>📝 Recent Transactions</h2>
+            <div class="transaction-list" id="transactionList"></div>
+        </div>
+    </div>
+
+    <!-- Deposit Modal -->
+    <div class="modal" id="depositModal">
+        <div class="modal-content">
+            <h2>💵 Add Deposit</h2>
+            <div class="form-group">
+                <label>Sportsbook</label>
+                <select id="depositSportsbook">
+                    <option value="">Select Sportsbook</option>
+                    <option value="DraftKings">DraftKings</option>
+                    <option value="BetMGM">BetMGM</option>
+                    <option value="theScore BET">theScore BET</option>
+                    <option value="BetRivers">BetRivers</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Amount ($)</label>
+                <input type="number" id="depositAmount" placeholder="0.00" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+                <label>Notes (optional)</label>
+                <input type="text" id="depositNotes" placeholder="e.g., Initial deposit, Weekly add">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-cancel" onclick="closeModal('deposit')">Cancel</button>
+                <button class="btn btn-deposit" onclick="submitDeposit()">Add Deposit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdraw Modal -->
+    <div class="modal" id="withdrawModal">
+        <div class="modal-content">
+            <h2>💸 Add Withdrawal</h2>
+            <div class="form-group">
+                <label>Sportsbook</label>
+                <select id="withdrawSportsbook">
+                    <option value="">Select Sportsbook</option>
+                    <option value="DraftKings">DraftKings</option>
+                    <option value="BetMGM">BetMGM</option>
+                    <option value="theScore BET">theScore BET</option>
+                    <option value="BetRivers">BetRivers</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Amount ($)</label>
+                <input type="number" id="withdrawAmount" placeholder="0.00" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+                <label>Processing Time</label>
+                <select id="withdrawProcessing">
+                    <option value="instant">Instant</option>
+                    <option value="1-3 days" selected>1-3 Business Days</option>
+                    <option value="3-5 days">3-5 Business Days</option>
+                    <option value="pending">Pending (unknown)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Notes (optional)</label>
+                <input type="text" id="withdrawNotes" placeholder="e.g., Transfer to DK, Cash out">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-cancel" onclick="closeModal('withdraw')">Cancel</button>
+                <button class="btn btn-withdraw" onclick="submitWithdraw()">Add Withdrawal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- In Use Modal -->
+    <div class="modal" id="inuseModal">
+        <div class="modal-content">
+            <h2>🏷️ Label Funds as In Use</h2>
+            <div class="form-group">
+                <label>Sportsbook</label>
+                <select id="inuseSportsbook">
+                    <option value="">Select Sportsbook</option>
+                    <option value="DraftKings">DraftKings</option>
+                    <option value="BetMGM">BetMGM</option>
+                    <option value="theScore BET">theScore BET</option>
+                    <option value="BetRivers">BetRivers</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Amount to Label as In Use ($)</label>
+                <input type="number" id="inuseAmount" placeholder="0.00" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+                <label>Reason (optional)</label>
+                <input type="text" id="inuseReason" placeholder="e.g., Bet pending, Manual hold">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-cancel" onclick="closeModal('inuse')">Cancel</button>
+                <button class="btn btn-inuse" onclick="submitInUse()">Label as In Use</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Modal -->
+    <div class="modal" id="transferModal">
+        <div class="modal-content">
+            <h2>↔ Transfer Between Sportsbooks</h2>
+            <div class="form-group">
+                <label>From Sportsbook</label>
+                <select id="transferFrom">
+                    <option value="">Select Source</option>
+                    <option value="DraftKings">DraftKings</option>
+                    <option value="BetMGM">BetMGM</option>
+                    <option value="theScore BET">theScore BET</option>
+                    <option value="BetRivers">BetRivers</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>To Sportsbook</label>
+                <select id="transferTo">
+                    <option value="">Select Destination</option>
+                    <option value="DraftKings">DraftKings</option>
+                    <option value="BetMGM">BetMGM</option>
+                    <option value="theScore BET">theScore BET</option>
+                    <option value="BetRivers">BetRivers</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Amount ($)</label>
+                <input type="number" id="transferAmount" placeholder="0.00" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+                <label>Processing Time</label>
+                <select id="transferProcessing">
+                    <option value="instant">Instant Transfer</option>
+                    <option value="1-3 days" selected>1-3 Business Days</option>
+                    <option value="3-5 days">3-5 Business Days</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-cancel" onclick="closeModal('transfer')">Cancel</button>
+                <button class="btn btn-transfer" onclick="submitTransfer()">Submit Transfer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Available sportsbooks (for dropdowns)
+        const availableSportsbooks = [
+            'DraftKings',
+            'BetMGM',
+            'theScore BET',
+            'BetRivers'
+        ];
+
+        // Initialize sportsbooks - try to load from localStorage first, otherwise start fresh
+        function initializeSportsbooks() {
+            const stored = localStorage.getItem('gnl_sportsbooks');
+            if (stored) {
+                try {
+                    return JSON.parse(stored);
+                } catch (e) {
+                    console.log('Could not parse stored sportsbooks, starting fresh');
+                }
+            }
+            // Start with current known balances (as of 4/4/26 1:26 PM)
+            const fresh = {};
+            availableSportsbooks.forEach(sb => {
+                fresh[sb] = { balance: 0.00, inUse: 0.00 };
+            });
+            // Set default balances if starting fresh
+            fresh['DraftKings'] = { balance: 36.58, inUse: 0.00 };
+            fresh['BetMGM'] = { balance: 6.62, inUse: 0.00 };
+            fresh['theScore BET'] = { balance: 20.08, inUse: 0.00 };
+            fresh['BetRivers'] = { balance: 20.00, inUse: 0.00 };
+            return fresh;
+        }
+
+        let sportsbooks = initializeSportsbooks();
+
+        // Load active bets and calculate inUse amounts
+        function loadActiveBets() {
+            const bets = JSON.parse(localStorage.getItem('gnl_bets')) || [];
+            const activeBets = bets.filter(b => b.status === 'pending');
+            
+            // Reset inUse to zero
+            for (let sb in sportsbooks) {
+                sportsbooks[sb].inUse = 0.00;
+            }
+            
+            // Add up stakes from active bets
+            activeBets.forEach(bet => {
+                if (sportsbooks[bet.book1]) {
+                    sportsbooks[bet.book1].inUse += parseFloat(bet.stake1) || 0;
+                }
+                if (sportsbooks[bet.book2]) {
+                    sportsbooks[bet.book2].inUse += parseFloat(bet.stake2) || 0;
+                }
+            });
+        }
+
+        // Initialize transactions
+        let transactions = JSON.parse(localStorage.getItem('gnl_transactions')) || [
+            { type: 'deposit', sportsbook: 'DraftKings', amount: 10.00, date: '2026-03-31', notes: 'Initial deposit' },
+            { type: 'deposit', sportsbook: 'BetMGM', amount: 10.00, date: '2026-03-31', notes: 'Initial deposit' },
+            { type: 'deposit', sportsbook: 'theScore BET', amount: 10.00, date: '2026-03-31', notes: 'Initial deposit' },
+            { type: 'withdrawal', sportsbook: 'BetMGM', amount: 20.00, date: '2026-04-03', notes: 'Transfer (pending 1-3 days)', processing: '1-3 days' }
+        ];
+
+        // Save transactions to localStorage
+        function saveTransactions() {
+            localStorage.setItem('gnl_transactions', JSON.stringify(transactions));
+        }
+
+        // Save sportsbooks to localStorage (for calculator to read)
+        function saveSportsbooks() {
+            localStorage.setItem('gnl_sportsbooks', JSON.stringify(sportsbooks));
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return '$' + amount.toFixed(2);
+        }
+
+        // Format date
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Update dashboard
+        function updateDashboard() {
+            let totalBalance = 0;
+            let totalInUse = 0;
+
+            for (let sb in sportsbooks) {
+                totalBalance += sportsbooks[sb].balance;
+                totalInUse += sportsbooks[sb].inUse;
+            }
+
+            document.getElementById('totalBankroll').textContent = formatCurrency(totalBalance);
+            document.getElementById('totalAvailable').textContent = formatCurrency(totalBalance - totalInUse);
+
+            // Weekly change (simplified - last 7 days)
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            let weeklyChange = 0;
+            transactions.forEach(t => {
+                const tDate = new Date(t.date);
+                if (tDate >= weekAgo) {
+                    if (t.type === 'deposit') weeklyChange += t.amount;
+                    else if (t.type === 'withdrawal') weeklyChange -= t.amount;
+                }
+            });
+            document.getElementById('weeklyChange').textContent = (weeklyChange >= 0 ? '+' : '') + formatCurrency(weeklyChange);
+        }
+
+        // Render sportsbooks
+        function renderSportsbooks() {
+            const grid = document.getElementById('sportsbooksGrid');
+            grid.innerHTML = '';
+
+            availableSportsbooks.forEach(sb => {
+                if (sportsbooks[sb]) {
+                    const available = sportsbooks[sb].balance - sportsbooks[sb].inUse;
+                    const card = document.createElement('div');
+                    card.className = 'sportsbook-card';
+                    card.innerHTML = `
+                        <div class="name">${sb}</div>
+                        <div class="balance">${formatCurrency(sportsbooks[sb].balance)}</div>
+                        <div class="details">
+                            <span>Available: ${formatCurrency(available)}</span>
+                            ${sportsbooks[sb].inUse > 0 ? `<span style="color: #ffa502;"> • In Use: ${formatCurrency(sportsbooks[sb].inUse)}</span>` : ''}
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                }
+            });
+        }
+
+        // Render transactions
+        function renderTransactions() {
+            const list = document.getElementById('transactionList');
+            list.innerHTML = '';
+
+            // Sort by date (newest first) and keep track of original indices
+            const sorted = transactions.map((t, i) => ({ ...t, originalIndex: i }))
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            sorted.forEach((t) => {
+                const item = document.createElement('div');
+                item.className = 'transaction-item';
+                item.innerHTML = `
+                    <div class="info">
+                        <div class="type">${t.type} ${t.type === 'transfer' ? `(${t.from} → ${t.to})` : `(${t.sportsbook})`}</div>
+                        <div class="description">${t.notes || ''}</div>
+                        <div class="date">${formatDate(t.date)}</div>
+                    </div>
+                    <div class="amount ${t.type}">
+                        ${t.type === 'deposit' ? '+' : t.type === 'withdrawal' ? '-' : '↔'}${formatCurrency(t.amount)}
+                    </div>
+                    <div class="actions">
+                        <button class="btn-edit" onclick="editTransaction(${t.originalIndex})">Edit</button>
+                        <button class="btn-delete" onclick="deleteTransaction(${t.originalIndex})">Delete</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // Modal functions
+        function openModal(type) {
+            document.getElementById(type + 'Modal').classList.add('active');
+        }
+
+        function closeModal(type) {
+            document.getElementById(type + 'Modal').classList.remove('active');
+            // Clear inputs
+            document.querySelectorAll('#' + type + 'Modal input').forEach(i => i.value = '');
+            document.querySelectorAll('#' + type + 'Modal select').forEach(s => s.selectedIndex = 0);
+        }
+
+        // Submit functions
+        function submitDeposit() {
+            const sportsbook = document.getElementById('depositSportsbook').value;
+            const amount = parseFloat(document.getElementById('depositAmount').value);
+            const notes = document.getElementById('depositNotes').value;
+
+            if (!sportsbook || isNaN(amount) || amount <= 0) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            // Update balance
+            sportsbooks[sportsbook].balance += amount;
+
+            // Add transaction
+            transactions.push({
+                type: 'deposit',
+                sportsbook: sportsbook,
+                amount: amount,
+                date: new Date().toISOString(),
+                notes: notes
+            });
+
+            saveTransactions();
+            saveSportsbooks();
+            updateDashboard();
+            renderSportsbooks();
+            renderTransactions();
+            closeModal('deposit');
+        }
+
+        function submitWithdraw() {
+            const sportsbook = document.getElementById('withdrawSportsbook').value;
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const processing = document.getElementById('withdrawProcessing').value;
+            const notes = document.getElementById('withdrawNotes').value;
+
+            if (!sportsbook || isNaN(amount) || amount <= 0) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            // Update balance (subtract immediately)
+            sportsbooks[sportsbook].balance -= amount;
+
+            // Add transaction
+            transactions.push({
+                type: 'withdrawal',
+                sportsbook: sportsbook,
+                amount: amount,
+                date: new Date().toISOString(),
+                notes: notes,
+                processing: processing
+            });
+
+            saveTransactions();
+            updateDashboard();
+            renderSportsbooks();
+            renderTransactions();
+            closeModal('withdraw');
+        }
+
+        function submitTransfer() {
+            const from = document.getElementById('transferFrom').value;
+            const to = document.getElementById('transferTo').value;
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+            const processing = document.getElementById('transferProcessing').value;
+
+            if (!from || !to || isNaN(amount) || amount <= 0) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            if (from === to) {
+                alert('Cannot transfer to the same sportsbook');
+                return;
+            }
+
+            // Update balances (instant only - no pending tracking)
+            sportsbooks[from].balance -= amount;
+            sportsbooks[to].balance += amount;
+
+            // Add transaction
+            transactions.push({
+                type: 'transfer',
+                from: from,
+                to: to,
+                amount: amount,
+                date: new Date().toISOString(),
+                processing: processing
+            });
+
+            saveTransactions();
+            updateDashboard();
+            renderSportsbooks();
+            renderTransactions();
+            closeModal('transfer');
+        }
+
+        // Submit In Use label
+        function submitInUse() {
+            const sportsbook = document.getElementById('inuseSportsbook').value;
+            const amount = parseFloat(document.getElementById('inuseAmount').value);
+            const reason = document.getElementById('inuseReason').value;
+
+            if (!sportsbook || isNaN(amount) || amount <= 0) {
+                alert('Please select a sportsbook and enter a valid amount');
+                return;
+            }
+
+            const available = sportsbooks[sportsbook].balance - (sportsbooks[sportsbook].inUse || 0);
+            if (amount > available) {
+                alert('Cannot label more than the available balance!');
+                return;
+            }
+
+            // Add to inUse
+            sportsbooks[sportsbook].inUse = (sportsbooks[sportsbook].inUse || 0) + amount;
+
+            // Add transaction record
+            transactions.unshift({
+                type: 'inuse',
+                sportsbook: sportsbook,
+                amount: amount,
+                date: new Date().toISOString(),
+                notes: reason || 'Manual label as In Use'
+            });
+
+            // Save and update UI
+            saveTransactions();
+            saveSportsbooks();
+            updateDashboard();
+            renderSportsbooks();
+            renderTransactions();
+            closeModal('inuse');
+
+            // Clear form
+            document.getElementById('inuseSportsbook').value = '';
+            document.getElementById('inuseAmount').value = '';
+            document.getElementById('inuseReason').value = '';
+
+            alert(`✅ Labeled ${formatCurrency(amount)} as "In Use" for ${sportsbook}`);
+        }
+
+        // Delete transaction
+        function deleteTransaction(index) {
+            if (!confirm('Are you sure you want to delete this transaction? This cannot be undone.')) {
+                return;
+            }
+
+            const t = transactions[index];
+            
+            // Reverse the transaction effects on balances
+            if (t.type === 'deposit') {
+                sportsbooks[t.sportsbook].balance -= t.amount;
+            } else if (t.type === 'withdrawal') {
+                sportsbooks[t.sportsbook].balance += t.amount;
+            } else if (t.type === 'transfer') {
+                sportsbooks[t.from].balance += t.amount;
+                sportsbooks[t.to].balance -= t.amount;
+            }
+
+            // Remove transaction
+            transactions.splice(index, 1);
+
+            saveTransactions();
+            saveSportsbooks();
+            updateDashboard();
+            renderSportsbooks();
+            renderTransactions();
+        }
+
+        // Edit transaction
+        function editTransaction(index) {
+            const t = transactions[index];
+            
+            // Reverse the transaction effects first
+            if (t.type === 'deposit') {
+                sportsbooks[t.sportsbook].balance -= t.amount;
+            } else if (t.type === 'withdrawal') {
+                sportsbooks[t.sportsbook].balance += t.amount;
+            } else if (t.type === 'transfer') {
+                sportsbooks[t.from].balance += t.amount;
+                sportsbooks[t.to].balance -= t.amount;
+            }
+
+            // Open appropriate modal with pre-filled values
+            if (t.type === 'deposit') {
+                document.getElementById('depositSportsbook').value = t.sportsbook;
+                document.getElementById('depositAmount').value = t.amount;
+                document.getElementById('depositNotes').value = t.notes || '';
+                openModal('deposit');
+                window.currentEditIndex = index;
+            } else if (t.type === 'withdrawal') {
+                document.getElementById('withdrawSportsbook').value = t.sportsbook;
+                document.getElementById('withdrawAmount').value = t.amount;
+                document.getElementById('withdrawNotes').value = t.notes || '';
+                openModal('withdraw');
+                window.currentEditIndex = index;
+            } else if (t.type === 'transfer') {
+                document.getElementById('transferFrom').value = t.from;
+                document.getElementById('transferTo').value = t.to;
+                document.getElementById('transferAmount').value = t.amount;
+                openModal('transfer');
+                window.currentEditIndex = index;
+            }
+        }
+
+        // Override submit functions for edit mode
+        const originalSubmitDeposit = submitDeposit;
+        const originalSubmitWithdraw = submitWithdraw;
+        const originalSubmitTransfer = submitTransfer;
+
+        submitDeposit = function() {
+            const sportsbook = document.getElementById('depositSportsbook').value;
+            const amount = parseFloat(document.getElementById('depositAmount').value);
+            const notes = document.getElementById('depositNotes').value;
+
+            if (!sportsbook || isNaN(amount) || amount <= 0) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            if (window.currentEditIndex !== undefined) {
+                transactions.splice(window.currentEditIndex, 1);
+            }
+
+            sportsbooks[sportsbook].balance += amount;
+            transactions.push({
+                type: 'deposit',
+                sportsbook: sportsbook,
+                amount: amount,
+                date: new Date().toISOString(),
+                notes: notes
+            });
+
+            delete window.currentEditIndex;
+            saveTransactions();
+            saveSportsbooks();
+            updateDashboard();
+            renderSportsbooks();
+            renderTransactions();
+            closeModal('deposit');
+        };
+
+        submitWithdraw = function() {
+            const sportsbook = document.getElementById('withdrawSportsbook').value;
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const notes = document.getElementById('withdrawNotes').value;
+
+            if (!sportsbook || isNaN(amount) || amount <= 0) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            if (window.currentEditIndex !== undefined) {
+                transactions.splice(window.currentEditIndex, 1);
+            }
+
+            sportsbooks[sportsbook].balance -= amount;
+            transactions.push({
+                type: 'withdrawal',
+                sportsbook: sportsbook,
+                amount: amount,
+                date: new Date().toISOString(),
+                notes: notes
+            });
+
+            delete window.currentEditIndex;
+            saveTransactions();
+            saveSportsbooks();
+            updateDashboard();
+            renderSportsbooks();
+            renderTransactions();
+            closeModal('withdraw');
+        };
+
+        submitTransfer = function() {
+            const from = document.getElementById('transferFrom').value;
+            const to = document.getElementById('transferTo').value;
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+
+            if (!from || !to || isNaN(amount) || amount <= 0) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            if (from === to) {
+                alert('Cannot transfer to the same sportsbook');
+                return;
+            }
+
+            if (window.currentEditIndex !== undefined) {
+                transactions.splice(window.currentEditIndex, 1);
+            }
+
+            sportsbooks[from].balance -= amount;
+            sportsbooks[to].balance += amount;
+            transactions.push({
+                type: 'transfer',
+                from: from,
+                to: to,
+                amount: amount,
+                date: new Date().toISOString()
+            });
+
+            delete window.currentEditIndex;
+            saveTransactions();
+            saveSportsbooks();
+            updateDashboard();
+            renderSportsbooks();
+            renderTransactions();
+            closeModal('transfer');
+        };
+
+        // Sync/Save to GitHub (downloads JSON for manual commit)
+        function syncToGitHub() {
+            const data = {
+                lastUpdated: new Date().toISOString(),
+                version: "1.0",
+                sportsbooks: sportsbooks,
+                transactions: transactions
+            };
+
+            const dataStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'bankroll-data.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // Show sync instructions
+            alert(`✅ Data saved to bankroll-data.json!\n\n📋 To sync to GitHub:\n\n1. Go to: https://github.com/GNL324/kettlebell-workout\n2. Click "Add file" → "Upload files"\n3. Select the downloaded bankroll-data.json\n4. Commit the changes\n\n📥 Then on other browsers:\n• Click "Load from GitHub" button\n• Or import the file manually\n\n💡 Tip: Bookmark the GitHub page for quick sync!`);
+        }
+
+        // Load data from GitHub (fetches bankroll-data.json)
+        async function loadFromGitHub() {
+            try {
+                const response = await fetch('https://gnl324.github.io/kettlebell-workout/bankroll-data.json');
+                
+                if (!response.ok) {
+                    throw new Error('File not found on GitHub');
+                }
+
+                const data = await response.json();
+
+                if (!data.sportsbooks || !data.transactions) {
+                    throw new Error('Invalid data format');
+                }
+
+                // Import sportsbooks
+                sportsbooks = data.sportsbooks;
+                localStorage.setItem('gnl_sportsbooks', JSON.stringify(sportsbooks));
+
+                // Import transactions
+                transactions = data.transactions;
+                localStorage.setItem('gnl_transactions', JSON.stringify(transactions));
+
+                // Refresh UI
+                updateDashboard();
+                renderSportsbooks();
+                renderTransactions();
+
+                alert(`✅ Data loaded from GitHub!\n\nLast updated: ${data.lastUpdated || 'Unknown'}\nSportsbooks: ${Object.keys(sportsbooks).length}\nTransactions: ${transactions.length}`);
+
+            } catch (err) {
+                alert('❌ Could not load from GitHub:\n' + err.message + '\n\nMake sure bankroll-data.json exists in the GitHub repo.\n\nAlternatively, use "Import File" to load a local JSON.');
+            }
+        }
+
+        // Export data to JSON file (local backup)
+        function exportData() {
+            const data = {
+                lastUpdated: new Date().toISOString(),
+                version: "1.0",
+                sportsbooks: sportsbooks,
+                transactions: transactions
+            };
+
+            const dataStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `bankroll-data-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            alert('✅ Data exported locally!\n\nSave this JSON file for backup or import on other browsers.');
+        }
+
+        // Import data from JSON file
+        function importData(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+
+                    if (!data.sportsbooks || !data.transactions) {
+                        throw new Error('Invalid data format');
+                    }
+
+                    // Import sportsbooks
+                    sportsbooks = data.sportsbooks;
+                    localStorage.setItem('gnl_sportsbooks', JSON.stringify(sportsbooks));
+
+                    // Import transactions
+                    transactions = data.transactions;
+                    localStorage.setItem('gnl_transactions', JSON.stringify(transactions));
+
+                    // Refresh UI
+                    updateDashboard();
+                    renderSportsbooks();
+                    renderTransactions();
+
+                    alert(`✅ Data imported successfully!\n\nLast updated: ${data.lastUpdated || 'Unknown'}\nSportsbooks: ${Object.keys(sportsbooks).length}\nTransactions: ${transactions.length}`);
+
+                } catch (err) {
+                    alert('❌ Error importing data:\n' + err.message + '\n\nMake sure the file is a valid bankroll-data.json export.');
+                }
+            };
+            reader.readAsText(file);
+            input.value = ''; // Reset file input
+        }
+
+        // Reset all data
+        function resetAll() {
+            if (!confirm('⚠️ WARNING: This will delete ALL your data!\n\n• All sportsbook balances → $0\n• All transactions → Deleted\n• All data will be lost!\n\nThis cannot be undone. Are you sure?')) {
+                return;
+            }
+
+            // Clear localStorage
+            localStorage.removeItem('gnl_sportsbooks');
+            localStorage.removeItem('gnl_transactions');
+
+            // Reset sportsbooks to zero
+            sportsbooks = {};
+            availableSportsbooks.forEach(sb => {
+                sportsbooks[sb] = { balance: 0.00, inUse: 0.00 };
+            });
+
+            // Clear transactions
+            transactions = [];
+
+            // Save and refresh display
+            saveTransactions();
+            saveSportsbooks();
+            updateDashboard();
+            renderSportsbooks();
+            renderTransactions();
+
+            alert('✅ All data has been reset to $0');
+        }
+
+        // Render pending bets
+        function renderPendingBets() {
+            const bets = JSON.parse(localStorage.getItem('gnl_bets')) || [];
+            const pendingBets = bets.filter(b => b.status === 'pending');
+            const list = document.getElementById('pendingBetsList');
+
+            if (pendingBets.length === 0) {
+                list.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">✅ No pending bets - all funds available!</p>';
+                return;
+            }
+
+            list.innerHTML = pendingBets.map(bet => `
+                <div class="pending-bet-card">
+                    <div class="header">
+                        <div class="event">${bet.event || 'Unnamed Bet'}</div>
+                        <div class="status">⏳ Pending</div>
+                    </div>
+                    <div class="details">
+                        <div class="detail-item">
+                            <div class="label">Side A</div>
+                            <div class="value">${bet.book1 || 'N/A'}: ${formatCurrency(bet.stake1 || 0)}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="label">Side B</div>
+                            <div class="value">${bet.book2 || 'N/A'}: ${formatCurrency(bet.stake2 || 0)}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="label">Profit</div>
+                            <div class="value" style="color: #00ff88;">+${formatCurrency(bet.profit || 0)}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="label">Date</div>
+                            <div class="value">${formatDate(bet.date || new Date())}</div>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-won" onclick="settleBetFromTracker(${bet.id}, 'won')">✅ Mark Won</button>
+                        <button class="btn-lost" onclick="settleBetFromTracker(${bet.id}, 'lost')">❌ Mark Lost</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Settle bet from bankroll tracker
+        function settleBetFromTracker(betId, result) {
+            const bets = JSON.parse(localStorage.getItem('gnl_bets')) || [];
+            const betIndex = bets.findIndex(b => b.id === betId);
+            
+            if (betIndex === -1) {
+                alert('Bet not found!');
+                return;
+            }
+
+            const bet = bets[betIndex];
+            const winningBook = result === 'won' ? bet.book1 : bet.book2;
+            const losingBook = result === 'won' ? bet.book2 : bet.book1;
+
+            if (!confirm(`Settle bet: ${bet.event || 'Unnamed'}\n\n${winningBook} WON (+${formatCurrency(bet.profit || 0)})\n${losingBook} LOST\n\nThis will update your bankroll balances.`)) {
+                return;
+            }
+
+            // Update bet status
+            bets[betIndex].status = winningBook;
+            localStorage.setItem('gnl_bets', JSON.stringify(bets));
+
+            // Update bankroll balances
+            const sportsbooks = JSON.parse(localStorage.getItem('gnl_sportsbooks')) || {};
+
+            // Initialize if needed
+            if (!sportsbooks[bet.book1]) sportsbooks[bet.book1] = { balance: 0, inUse: 0 };
+            if (!sportsbooks[bet.book2]) sportsbooks[bet.book2] = { balance: 0, inUse: 0 };
+
+            // Release inUse funds
+            sportsbooks[bet.book1].inUse = Math.max(0, (sportsbooks[bet.book1].inUse || 0) - (bet.stake1 || 0));
+            sportsbooks[bet.book2].inUse = Math.max(0, (sportsbooks[bet.book2].inUse || 0) - (bet.stake2 || 0));
+
+            // Calculate and add payout to winning book
+            const winningStake = result === 'won' ? bet.stake1 : bet.stake2;
+            const winningOddsStr = (result === 'won' ? bet.odds1 : bet.odds2 || '').replace('+', '');
+            const winningOdds = parseFloat(winningOddsStr) || 0;
+
+            let payout = 0;
+            if (winningOdds > 0) {
+                payout = winningStake * (1 + winningOdds / 100);
+            } else if (winningOdds < 0) {
+                payout = winningStake * (1 + 100 / Math.abs(winningOdds));
+            } else {
+                // Fallback: use stake + profit
+                payout = (winningStake || 0) + (bet.profit || 0);
+            }
+
+            sportsbooks[winningBook].balance = (sportsbooks[winningBook].balance || 0) + payout;
+
+            // Add transaction record
+            transactions.unshift({
+                type: result === 'won' ? 'win' : 'loss',
+                sportsbook: winningBook,
+                amount: result === 'won' ? payout : -(bet.stake2 || 0),
+                date: new Date().toISOString(),
+                notes: `Bet settled: ${bet.event || 'Unnamed'} - ${winningBook} ${result === 'won' ? 'WON' : 'LOST'}`
+            });
+
+            // Save and update UI
+            localStorage.setItem('gnl_sportsbooks', JSON.stringify(sportsbooks));
+            saveTransactions();
+            updateDashboard();
+            renderSportsbooks();
+            renderTransactions();
+            renderPendingBets();
+
+            alert(`✅ Bet settled!\n\n${winningBook} ${result === 'won' ? 'WON +$' + (payout - (winningStake || 0)).toFixed(2) : 'LOST'}\n\nBankroll updated!`);
+        }
+
+        // Initialize
+        loadActiveBets();
+        updateDashboard();
+        renderSportsbooks();
+        renderTransactions();
+        renderPendingBets();
+    </script>
+</body>
+</html>

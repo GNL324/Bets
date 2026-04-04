@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GNL Calculator - Custom Stakes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+            color: #00d9ff;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .calculator {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .bet-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        @media (max-width: 600px) {
+            .bet-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .swap-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d9ff, #00ff88);
+            border: 3px solid #1a1a2e;
+            color: #000;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .swap-btn:hover {
+            transform: translate(-50%, -50%) scale(1.1) rotate(180deg);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+        }
+
+        .swap-btn:active {
+            transform: translate(-50%, -50%) scale(0.95) rotate(180deg);
+        }
+
+        @media (max-width: 600px) {
+            .swap-btn {
+                position: relative;
+                top: auto;
+                left: auto;
+                transform: none;
+                margin: 10px auto;
+                width: 60px;
+                height: 60px;
+            }
+
+            .swap-btn:hover {
+                transform: scale(1.1) rotate(180deg);
+            }
+
+            .swap-btn:active {
+                transform: scale(0.95) rotate(180deg);
+            }
+        }
+
+        .bet-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .bet-card h3 {
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: #00d9ff;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #00d9ff;
+            box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+        }
+
+        .stake-section {
+            background: rgba(0, 217, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(0, 217, 255, 0.3);
+        }
+
+        .stake-section h3 {
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: #00d9ff;
+        }
+
+        .stake-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .stake-inputs {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .results {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .result-value {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .result-value.profit {
+            color: #00ff88;
+        }
+
+        .result-value.loss {
+            color: #ff4757;
+        }
+
+        .result-value.neutral {
+            color: #ffa502;
+        }
+
+        .arb-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .arb-badge.yes {
+            background: linear-gradient(135deg, #00ff88, #00d9ff);
+            color: #000;
+        }
+
+        .arb-badge.no {
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            color: #fff;
+        }
+
+        .payout-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .payout-info h4 {
+            color: #00ff88;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #00d9ff, #00ff88);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.02);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .quick-stakes {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .quick-stake-btn {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .quick-stake-btn:hover {
+            background: rgba(0, 217, 255, 0.3);
+            border-color: #00d9ff;
+        }
+
+        .round-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #ffa502, #ff7f50);
+            border: 1px solid rgba(255, 165, 2, 0.5);
+            border-radius: 20px;
+            color: #000;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            margin-left: auto;
+        }
+
+        .round-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 165, 2, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧮 GNL Calculator <span style="background: linear-gradient(135deg, #ffa502, #ff7f50); color: #000; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-left: 10px;">🏖️ SANDBOX</span></h1>
+        <p class="subtitle">Custom stakes • Real-time calculations • Bankroll-aware<br><span style="color: #ffa502; font-size: 12px;">⚠️ Test Mode - Data separate from production</span></p>
+        
+        <!-- Navigation Links -->
+        <div style="text-align: center; margin-bottom: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <a href="./tracker.html" style="display: inline-block; padding: 10px 20px; background: rgba(0, 217, 255, 0.2); border: 1px solid rgba(0, 217, 255, 0.5); border-radius: 8px; color: #00d9ff; text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.3s;">
+                💰 Bankroll
+            </a>
+            <a href="./bets.html" style="display: inline-block; padding: 10px 20px; background: rgba(0, 217, 255, 0.2); border: 1px solid rgba(0, 217, 255, 0.5); border-radius: 8px; color: #00d9ff; text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.3s;">
+                📊 Bet History
+            </a>
+        </div>
+
+        <!-- Bankroll Alert -->
+        <div id="bankrollAlert" style="display: none; background: rgba(255, 165, 2, 0.2); border: 1px solid rgba(255, 165, 2, 0.5); border-radius: 12px; padding: 15px; margin-bottom: 20px; text-align: center;">
+            <span id="bankrollAlertText" style="color: #ffa502; font-size: 14px;"></span>
+        </div>
+
+        <!-- Max Bet Display -->
+        <div id="maxBetDisplay" style="display: none; background: rgba(0, 217, 255, 0.1); border: 1px solid rgba(0, 217, 255, 0.3); border-radius: 12px; padding: 15px; margin-bottom: 20px; text-align: center;">
+            <div style="color: #00d9ff; font-size: 13px; margin-bottom: 5px;">Maximum Bet Based on Available Balances</div>
+            <div style="font-size: 24px; font-weight: bold; color: #00ff88;" id="maxBetAmount">$0.00</div>
+            <div style="color: #888; font-size: 12px; margin-top: 5px;" id="maxBetDetails"></div>
+            <div style="color: #888; font-size: 12px; margin-top: 8px;" id="maxBetProfit"></div>
+        </div>
+
+        <div class="calculator">
+            <!-- Bet 1 -->
+            <div class="bet-section">
+                <button class="swap-btn" onclick="swapBets()" title="Swap Bet 1 and Bet 2">⇄</button>
+                
+                <div class="bet-card">
+                    <h3>Bet 1 (Side A)</h3>
+                    <div class="input-group">
+                        <label>American Odds</label>
+                        <input type="text" id="odds1" placeholder="+150 or -110" value="+175">
+                    </div>
+                    <div class="input-group">
+                        <label>Bookmaker</label>
+                        <select id="book1" style="width: 100%; padding: 12px; border: 1px solid rgba(0, 217, 255, 0.5); border-radius: 8px; background: #ffffff; color: #000000; font-size: 16px; font-weight: 500;">
+                            <option value="">Select Bookmaker</option>
+                            <option value="DraftKings" selected>DraftKings</option>
+                            <option value="BetMGM">BetMGM</option>
+                            <option value="theScore BET">theScore BET</option>
+                            <option value="BetRivers">BetRivers</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Bet/Outcome</label>
+                        <select id="outcome1" style="width: 100%; padding: 12px; border: 1px solid rgba(0, 217, 255, 0.5); border-radius: 8px; background: #ffffff; color: #000000; font-size: 16px; font-weight: 500;">
+                            <option value="">Select Outcome</option>
+                            <option value="Over" selected>Over</option>
+                            <option value="Under">Under</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="bet-card">
+                    <h3>Bet 2 (Side B)</h3>
+                    <div class="input-group">
+                        <label>American Odds</label>
+                        <input type="text" id="odds2" placeholder="+150 or -110" value="-155">
+                    </div>
+                    <div class="input-group">
+                        <label>Bookmaker</label>
+                        <select id="book2" style="width: 100%; padding: 12px; border: 1px solid rgba(0, 217, 255, 0.5); border-radius: 8px; background: #ffffff; color: #000000; font-size: 16px; font-weight: 500;">
+                            <option value="">Select Bookmaker</option>
+                            <option value="DraftKings">DraftKings</option>
+                            <option value="BetMGM" selected>BetMGM</option>
+                            <option value="theScore BET">theScore BET</option>
+                            <option value="BetRivers">BetRivers</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Bet/Outcome</label>
+                        <select id="outcome2" style="width: 100%; padding: 12px; border: 1px solid rgba(0, 217, 255, 0.5); border-radius: 8px; background: #ffffff; color: #000000; font-size: 16px; font-weight: 500;">
+                            <option value="">Select Outcome</option>
+                            <option value="Over">Over</option>
+                            <option value="Under" selected>Under</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Stakes -->
+            <div class="stake-section">
+                <h3>💰 Custom Stakes (Auto-Scales Both)</h3>
+                <div class="stake-inputs">
+                    <div class="input-group">
+                        <label>Stake on Bet 1</label>
+                        <input type="number" id="stake1" placeholder="Amount" value="10.00" step="0.01">
+                    </div>
+                    <div class="input-group">
+                        <label>Stake on Bet 2 (Auto-scaled)</label>
+                        <input type="number" id="stake2" placeholder="Amount" value="16.71" step="0.01">
+                    </div>
+                </div>
+                <div class="quick-stakes">
+                    <span style="color: #888; font-size: 13px; align-self: center;">Quick stakes:</span>
+                    <button class="quick-stake-btn" onclick="setStakes(5)">$5</button>
+                    <button class="quick-stake-btn" onclick="setStakes(10)">$10</button>
+                    <button class="quick-stake-btn" onclick="setStakes(20)">$20</button>
+                    <button class="quick-stake-btn" onclick="setStakes(50)">$50</button>
+                    <button class="quick-stake-btn" onclick="setStakes(100)">$100</button>
+                    <button class="round-btn" onclick="roundStakes()">🔢 Round to Whole Numbers</button>
+                </div>
+                <p style="color: #888; font-size: 12px; margin-top: 10px;">
+                    💡 Edit Bet 1 stake → Bet 2 auto-scales for optimal arbitrage
+                </p>
+            </div>
+
+            <!-- Results -->
+            <div class="results">
+                <div class="result-row">
+                    <span class="result-label">Total Stake</span>
+                    <span class="result-value" id="totalStake">$26.71</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Implied Probability (Bet 1)</span>
+                    <span class="result-value" id="implied1">36.36%</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Implied Probability (Bet 2)</span>
+                    <span class="result-value" id="implied2">60.79%</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Total Implied Probability</span>
+                    <span class="result-value neutral" id="totalImplied">97.15%</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Arbitrage Edge</span>
+                    <span class="result-value profit" id="arbEdge">2.85%</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">If Bet 1 Wins</span>
+                    <span class="result-value profit" id="profit1">+$0.79</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">If Bet 2 Wins</span>
+                    <span class="result-value profit" id="profit2">+$0.78</span>
+                </div>
+
+                <div id="arbBadge" class="arb-badge yes">✅ ARBITRAGE OPPORTUNITY</div>
+
+                <div class="payout-info">
+                    <h4>💵 Payout Breakdown</h4>
+                    <div class="result-row">
+                        <span class="result-label">Bet 1 Payout</span>
+                        <span class="result-value" id="payout1">$27.50</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Bet 2 Payout</span>
+                        <span class="result-value" id="payout2">$27.49</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Guaranteed Profit</span>
+                        <span class="result-value profit" id="guaranteedProfit">+$0.78 - $0.79</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">ROI</span>
+                        <span class="result-value profit" id="roi">2.95%</span>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="calculate()">🔄 Recalculate</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let lastEdited = 'stake1'; // Track which stake was last edited
+
+        // SANDBOX MODE - Uses separate localStorage keys
+        const SANDBOX_MODE = true;
+        const STORAGE_PREFIX = SANDBOX_MODE ? 'gnl_sandbox_' : 'gnl_';
+
+        // Bankroll balances - try to load from localStorage (from tracker), otherwise use defaults
+        function getBankrollBalances() {
+            // Try to get balances from tracker's localStorage
+            const stored = localStorage.getItem(STORAGE_PREFIX + 'sportsbooks');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    const balances = {};
+                    for (let sb in parsed) {
+                        balances[sb] = parsed[sb].balance || 0;
+                    }
+                    return balances;
+                } catch (e) {
+                    console.log('Could not parse stored bankroll data');
+                }
+            }
+            // Default balances (last known from tracker)
+            return {
+                'DraftKings': 36.58,
+                'BetMGM': 6.62,
+                'theScore BET': 20.08,
+                'BetRivers': 20.00
+            };
+        }
+
+        const bankrollBalances = getBankrollBalances();
+
+        // Calculate maximum bet based on selected sportsbooks
+        function calculateMaxBet() {
+            const book1 = document.getElementById('book1').value;
+            const book2 = document.getElementById('book2').value;
+            
+            const maxBetDisplay = document.getElementById('maxBetDisplay');
+            const bankrollAlert = document.getElementById('bankrollAlert');
+            
+            if (!book1 || !book2) {
+                maxBetDisplay.style.display = 'none';
+                bankrollAlert.style.display = 'none';
+                return;
+            }
+
+            const balance1 = bankrollBalances[book1] || 0;
+            const balance2 = bankrollBalances[book2] || 0;
+
+            // For arbitrage, we need to find the max stake1 where:
+            // stake1 <= balance1 AND stake2 <= balance2
+            // stake2 = stake1 * decimal1 / decimal2
+            
+            const odds1 = parseFloat(document.getElementById('odds1').value.replace('+', '')) || 0;
+            const odds2 = parseFloat(document.getElementById('odds2').value.replace('+', '')) || 0;
+
+            if (odds1 === 0 || odds2 === 0) {
+                maxBetDisplay.style.display = 'none';
+                return;
+            }
+
+            const decimal1 = americanToDecimal(odds1);
+            const decimal2 = americanToDecimal(odds2);
+
+            // Max stake1 based on balance1
+            const maxStake1ByBalance1 = balance1;
+            
+            // Max stake1 based on balance2: stake2 = stake1 * decimal1 / decimal2 <= balance2
+            // Therefore: stake1 <= balance2 * decimal2 / decimal1
+            const maxStake1ByBalance2 = balance2 * decimal2 / decimal1;
+
+            // Take the smaller of the two
+            const maxStake1 = Math.min(maxStake1ByBalance1, maxStake1ByBalance2);
+            const maxStake2 = maxStake1 * decimal1 / decimal2;
+
+            if (maxStake1 > 0 && maxStake2 > 0) {
+                const totalStake = maxStake1 + maxStake2;
+                
+                // Calculate payout and profit at max bet
+                const payout1 = maxStake1 * decimal1;
+                const payout2 = maxStake2 * decimal2;
+                const guaranteedProfit = Math.min(payout1, payout2) - totalStake;
+                const roi = (guaranteedProfit / totalStake) * 100;
+                
+                document.getElementById('maxBetAmount').textContent = '$' + maxStake1.toFixed(2) + ' + $' + maxStake2.toFixed(2);
+                document.getElementById('maxBetDetails').textContent = `${book1}: $${maxStake1.toFixed(2)} (avail: $${balance1.toFixed(2)}) • ${book2}: $${maxStake2.toFixed(2)} (avail: $${balance2.toFixed(2)})`;
+                
+                // Add expected profit line
+                const profitLine = document.getElementById('maxBetProfit');
+                if (profitLine) {
+                    profitLine.textContent = `💰 Expected Profit: +$${guaranteedProfit.toFixed(2)} (${roi.toFixed(2)}% ROI)`;
+                    profitLine.style.display = 'block';
+                    profitLine.style.color = guaranteedProfit > 0 ? '#00ff88' : '#ff4757';
+                    profitLine.style.fontWeight = 'bold';
+                    profitLine.style.marginTop = '8px';
+                    profitLine.style.fontSize = '14px';
+                }
+                
+                maxBetDisplay.style.display = 'block';
+
+                // Check if either balance is very low
+                if (balance1 < 5 || balance2 < 5) {
+                    const lowBooks = [];
+                    if (balance1 < 5) lowBooks.push(`${book1} ($${balance1.toFixed(2)})`);
+                    if (balance2 < 5) lowBooks.push(`${book2} ($${balance2.toFixed(2)})`);
+                    document.getElementById('bankrollAlertText').textContent = `⚠️ Low balance warning: ${lowBooks.join(', ')}. Consider adding funds.`;
+                    bankrollAlert.style.display = 'block';
+                } else {
+                    bankrollAlert.style.display = 'none';
+                }
+            } else {
+                maxBetDisplay.style.display = 'none';
+                bankrollAlert.style.display = 'block';
+                document.getElementById('bankrollAlertText').textContent = `❌ Insufficient funds in ${balance1 < balance2 ? book1 : book2}. Need to add funds before placing this arb.`;
+            }
+        }
+
+        // Add event listeners to odds inputs
+        document.getElementById('odds1').addEventListener('input', () => {
+            calculate(true); // Recalculate with scaling
+            calculateMaxBet(); // Update max bet
+        });
+        
+        document.getElementById('odds2').addEventListener('input', () => {
+            calculate(true); // Recalculate with scaling
+            calculateMaxBet(); // Update max bet
+        });
+
+        // Add event listeners to stake inputs
+        document.getElementById('stake1').addEventListener('input', () => {
+            lastEdited = 'stake1';
+            calculate(true); // Scale stake2
+        });
+        
+        document.getElementById('stake2').addEventListener('input', () => {
+            lastEdited = 'stake2';
+            calculate(false); // Don't scale, just calculate
+        });
+
+        // Add event listeners to bookmaker dropdowns (trigger max bet calculation)
+        ['book1', 'book2'].forEach(id => {
+            document.getElementById(id).addEventListener('change', () => {
+                calculate();
+                calculateMaxBet();
+            });
+        });
+
+        // Add event listeners to other inputs (no scaling)
+        ['odds1', 'odds2', 'outcome1', 'outcome2'].forEach(id => {
+            document.getElementById(id).addEventListener('change', calculate);
+        });
+
+        function setStakes(baseStake) {
+            lastEdited = 'stake1';
+            document.getElementById('stake1').value = baseStake.toFixed(2);
+            calculate(true); // Auto-scale stake2
+        }
+
+        // Round stakes to whole numbers (no cents)
+        function roundStakes() {
+            const stake1 = parseFloat(document.getElementById('stake1').value) || 0;
+            const stake2 = parseFloat(document.getElementById('stake2').value) || 0;
+
+            if (stake1 <= 0 || stake2 <= 0) {
+                return; // Nothing to round
+            }
+
+            // Round both stakes to nearest whole dollar
+            const roundedStake1 = Math.round(stake1);
+            const roundedStake2 = Math.round(stake2);
+
+            // Update both stakes (no re-calculation, just round both)
+            document.getElementById('stake1').value = roundedStake1.toFixed(2);
+            document.getElementById('stake2').value = roundedStake2.toFixed(2);
+
+            // Recalculate profit with rounded stakes
+            lastEdited = 'stake1';
+            calculate(false); // Don't re-scale, just calculate with rounded values
+            calculateMaxBet();
+        }
+
+        // Swap Bet 1 and Bet 2
+        function swapBets() {
+            // Get current values
+            const odds1 = document.getElementById('odds1').value;
+            const odds2 = document.getElementById('odds2').value;
+            const book1 = document.getElementById('book1').value;
+            const book2 = document.getElementById('book2').value;
+            const outcome1 = document.getElementById('outcome1').value;
+            const outcome2 = document.getElementById('outcome2').value;
+            const stake1 = document.getElementById('stake1').value;
+            const stake2 = document.getElementById('stake2').value;
+
+            // Swap values
+            document.getElementById('odds1').value = odds2;
+            document.getElementById('odds2').value = odds1;
+            document.getElementById('book1').value = book2;
+            document.getElementById('book2').value = book1;
+            document.getElementById('outcome1').value = outcome2;
+            document.getElementById('outcome2').value = outcome1;
+            document.getElementById('stake1').value = stake2;
+            document.getElementById('stake2').value = stake1;
+
+            // Recalculate
+            lastEdited = 'stake1';
+            calculate(true);
+            calculateMaxBet();
+        }
+
+        function americanToDecimal(odds) {
+            if (odds > 0) {
+                return (odds / 100) + 1;
+            } else {
+                return (100 / Math.abs(odds)) + 1;
+            }
+        }
+
+        function americanToImplied(odds) {
+            if (odds > 0) {
+                return 100 / (odds + 100);
+            } else {
+                return Math.abs(odds) / (Math.abs(odds) + 100);
+            }
+        }
+
+        function calculate(scaleStakes = false) {
+            // Get odds
+            let odds1Str = document.getElementById('odds1').value.replace('+', '');
+            let odds2Str = document.getElementById('odds2').value.replace('+', '');
+            
+            let odds1 = parseFloat(odds1Str);
+            let odds2 = parseFloat(odds2Str);
+            
+            // Get stakes
+            let stake1 = parseFloat(document.getElementById('stake1').value) || 0;
+            let stake2 = parseFloat(document.getElementById('stake2').value) || 0;
+
+            if (isNaN(odds1) || isNaN(odds2)) {
+                return;
+            }
+
+            // Auto-scale stakes if editing stake1 or odds changed
+            if (scaleStakes && lastEdited === 'stake1') {
+                // Calculate optimal stake2 based on stake1
+                let decimal1 = americanToDecimal(odds1);
+                let decimal2 = americanToDecimal(odds2);
+                
+                // For equal payouts: stake1 * decimal1 = stake2 * decimal2
+                // Therefore: stake2 = stake1 * decimal1 / decimal2
+                stake2 = stake1 * decimal1 / decimal2;
+                
+                // Update stake2 input (without triggering event)
+                document.getElementById('stake2').value = stake2.toFixed(2);
+            }
+
+            // Calculate implied probabilities
+            let implied1 = americanToImplied(odds1);
+            let implied2 = americanToImplied(odds2);
+            let totalImplied = implied1 + implied2;
+            let arbEdge = 100 - (totalImplied * 100);
+
+            // Calculate payouts
+            let decimal1 = americanToDecimal(odds1);
+            let decimal2 = americanToDecimal(odds2);
+            
+            let payout1 = stake1 * decimal1;
+            let payout2 = stake2 * decimal2;
+
+            // Calculate profits
+            let totalStake = stake1 + stake2;
+            let profit1 = payout1 - totalStake;
+            let profit2 = payout2 - totalStake;
+
+            // Calculate ROI (using minimum profit)
+            let minProfit = Math.min(profit1, profit2);
+            let roi = (minProfit / totalStake) * 100;
+
+            // Update display
+            document.getElementById('totalStake').textContent = '$' + totalStake.toFixed(2);
+            document.getElementById('implied1').textContent = (implied1 * 100).toFixed(2) + '%';
+            document.getElementById('implied2').textContent = (implied2 * 100).toFixed(2) + '%';
+            document.getElementById('totalImplied').textContent = (totalImplied * 100).toFixed(2) + '%';
+            document.getElementById('arbEdge').textContent = arbEdge.toFixed(2) + '%';
+            
+            // Color code total implied
+            let totalImpliedEl = document.getElementById('totalImplied');
+            if (totalImplied * 100 < 100) {
+                totalImpliedEl.className = 'result-value profit';
+            } else {
+                totalImpliedEl.className = 'result-value loss';
+            }
+
+            // Update profit display
+            let profit1El = document.getElementById('profit1');
+            let profit2El = document.getElementById('profit2');
+            
+            profit1El.textContent = (profit1 >= 0 ? '+' : '') + '$' + profit1.toFixed(2);
+            profit2El.textContent = (profit2 >= 0 ? '+' : '') + '$' + profit2.toFixed(2);
+            
+            profit1El.className = 'result-value ' + (profit1 >= 0 ? 'profit' : 'loss');
+            profit2El.className = 'result-value ' + (profit2 >= 0 ? 'profit' : 'loss');
+
+            // Update arb badge
+            let badge = document.getElementById('arbBadge');
+            if (arbEdge > 0) {
+                badge.className = 'arb-badge yes';
+                badge.textContent = '✅ ARBITRAGE OPPORTUNITY';
+            } else {
+                badge.className = 'arb-badge no';
+                badge.textContent = '❌ NO ARBITRAGE (LOSS GUARANTEED)';
+            }
+
+            // Update payout info
+            document.getElementById('payout1').textContent = '$' + payout1.toFixed(2);
+            document.getElementById('payout2').textContent = '$' + payout2.toFixed(2);
+            document.getElementById('guaranteedProfit').textContent = 
+                (profit2 >= 0 ? '+' : '') + '$' + Math.min(profit1, profit2).toFixed(2) + 
+                ' - ' + 
+                (profit1 >= 0 ? '+' : '') + '$' + Math.max(profit1, profit2).toFixed(2);
+            document.getElementById('roi').textContent = roi.toFixed(2) + '%';
+
+            // Color code ROI
+            let roiEl = document.getElementById('roi');
+            roiEl.className = 'result-value ' + (roi >= 0 ? 'profit' : 'loss');
+        }
+
+        // Initial calculation
+        calculate();
+    </script>
+</body>
+</html>
