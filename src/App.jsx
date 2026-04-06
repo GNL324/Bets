@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import { Calculator, TrendingUp, History, Home } from 'lucide-react'
 import CalculatorPage from './components/Calculator'
 import TrackerPage from './components/Tracker'
