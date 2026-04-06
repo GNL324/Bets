@@ -1,76 +1,103 @@
-# 🎯 Sportsbook Tracker
+# 🎯 GNL Sportsbook Tracker
 
-Arbitrage betting tracker with calculator, bankroll management, and bet history.
+Arbitrage betting tools for bankroll management built with React + Vite.
 
-## 🚀 Production (Real Data)
+## 🚀 Features
 
-- 🧮 **Calculator**: https://gnl324.github.io/sportsbook-tracker/calculator.html
-- 💰 **Bankroll Tracker**: https://gnl324.github.io/sportsbook-tracker/tracker.html
-- 📊 **Bet History**: https://gnl324.github.io/sportsbook-tracker/bets.html
+- **🧮 Arbitrage Calculator** - Calculate optimal bet stakes for guaranteed profit
+- **💰 Bankroll Tracker** - Track deposits, withdrawals, and balances across sportsbooks
+- **📊 Bet History** - Log and track all your arbitrage bets
+- **📊 Excel Export/Import** - Backup and restore your data
+- **🏖️ Sandbox Mode** - Test features without affecting real data
 
-## 🏖️ Sandbox (Test Data)
+## 🛠️ Tech Stack
 
-- 🧮 **Calculator**: https://gnl324.github.io/sportsbook-tracker/sandbox/calculator.html
-- 💰 **Bankroll Tracker**: https://gnl324.github.io/sportsbook-tracker/sandbox/tracker.html
-- 📊 **Bet History**: https://gnl324.github.io/sportsbook-tracker/sandbox/bets.html
+- **React 18** - UI framework
+- **Vite** - Build tool (fast builds)
+- **React Router** - Client-side routing
+- **XLSX** - Excel export/import
+- **Lucide React** - Icons
 
-## 📋 Features
+## 📦 Installation
 
-- ✅ Arbitrage calculator with bankroll integration
-- ✅ Multi-sportsbook bankroll tracking
-- ✅ Bet history with proof images
-- ✅ Auto-settlement with bankroll sync
-- ✅ Pending bet tracking ("In Use" funds)
-- ✅ Export/Import for cross-browser sync
-- ✅ Sandbox environment for safe testing
-
-## 🎯 Usage
-
-### Production
-Use for real betting with actual money.
-
-### Sandbox
-Use for testing new features, UI experiments, and learning.
-
-## 📁 File Structure
-
-```
-sportsbook-tracker/
-├── calculator.html          # Production Calculator
-├── tracker.html             # Production Bankroll Tracker
-├── bets.html                # Production Bet History
-├── bankroll-data.json       # Default bankroll data
-├── bet-history-data.json    # Default bet history
-└── sandbox/
-    ├── calculator.html      # Sandbox Calculator
-    ├── tracker.html         # Sandbox Tracker
-    └── bets.html            # Sandbox Bet History
+```bash
+npm install
 ```
 
-## 🛠️ Development
+## 🏃 Development
 
-1. Make changes to source files in `/trading-betting/`
-2. Test in sandbox first
-3. Deploy to production when ready
-4. Commit and push to GitHub
+```bash
+npm run dev
+```
 
-## 📊 Data Storage
+## 🏗️ Build for Production
 
-- **Production**: `localStorage` keys prefixed with `gnl_`
-- **Sandbox**: `localStorage` keys prefixed with `gnl_sandbox_`
-- Data is browser-specific (Chrome ≠ Safari)
-- Use Export/Import to sync across browsers
+```bash
+npm run build
+```
 
-## 🎲 Sportsbooks Supported
+Output will be in `dist/` folder.
+
+## 🌐 Deployment
+
+### GitHub Pages
+
+1. Build: `npm run build`
+2. Push `dist/` folder to GitHub
+3. Enable GitHub Pages on `main` branch
+
+### Vercel
+
+```bash
+vercel deploy
+```
+
+### Netlify
+
+```bash
+netlify deploy
+```
+
+### FTP
+
+Upload contents of `dist/` folder to your web server.
+
+## 📊 Excel Format
+
+### Bet History Export
+
+| Column | Description |
+|--------|-------------|
+| Bet ID | Unique identifier |
+| Date | Bet date |
+| Event | Game/event name |
+| Sportsbook A/B | Which books used |
+| Stake A/B | Bet amounts |
+| Odds A/B | Odds on each side |
+| Profit | Guaranteed profit |
+| Status | Pending/Settled |
+
+### Bankroll Export
+
+**Sheet 1 - Balances:**
+- Sportsbook, Balance, In Use, Available
+
+**Sheet 2 - Transactions:**
+- Date, Type, Sportsbook, Amount, Notes
+
+## 📝 LocalStorage Keys
+
+- Production: `gnl_sportsbooks`, `gnl_transactions`, `gnl_bets`
+- Sandbox: `gnl_sandbox_sportsbooks`, `gnl_sandbox_transactions`, `gnl_sandbox_bets`
+
+## 🎯 Supported Sportsbooks
 
 - DraftKings
-- FanDuel
 - BetMGM
 - theScore BET
 - BetRivers
-- Fanatics
-- Kalshi
+- FanDuel
 
----
+## 📄 License
 
-**Built for arbitrage betting tracking and bankroll management.**
+MIT
